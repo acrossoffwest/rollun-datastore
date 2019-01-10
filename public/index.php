@@ -14,6 +14,13 @@ require_once 'config/env_configurator.php';
 $container = require 'config/container.php';
 \rollun\dic\InsideConstruct::setContainer($container);
 
+use rollun\test\files\CsvFileObject\CsvFileObjectAbstractTest;
+
+exit();
+
+
+
+
 const EXAMPLES_DIR = '/src/DataStore/src/Examples';
 
 $uri = $_SERVER['REQUEST_URI'];

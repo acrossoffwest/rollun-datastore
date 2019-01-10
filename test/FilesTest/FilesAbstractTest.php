@@ -12,14 +12,14 @@ abstract class FilesAbstractTest extends \PHPUnit_Framework_TestCase
     public function tearDown()
     {
         $fullFilename = $this->makeFullFileName();
-        unlink($fullFilename);
+        @unlink($fullFilename);
     }
 
     protected function makeDirName()
     {
         $fileManager = new FileManager;
         $dataDir = Command::getDataDir();
-        $pathArray = explode('\\', strtolower(__NAMESPACE__));
+        $pathArray = explode('\\', strtolower(get_class($this)));
         array_shift($pathArray);
         $subDir = implode('/', $pathArray);
         $dirName = $fileManager->joinPath($dataDir, $subDir);

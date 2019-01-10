@@ -10,6 +10,9 @@
 namespace rollun\test\datastore\RqlParser;
 
 use Xiag\Rql\Parser\Node\LimitNode;
+use rollun\datastore\Rql\Node\ContainsNode;
+use Xiag\Rql\Parser\Node\Query\ScalarOperator\LikeNode;
+use \rollun\datastore\Rql\Node\LikeGlobNode;
 use Xiag\Rql\Parser\Node\Query\LogicOperator\AndNode;
 use Xiag\Rql\Parser\Node\Query\LogicOperator\OrNode;
 use Xiag\Rql\Parser\Node\Query\ScalarOperator\EqNode;
@@ -78,6 +81,67 @@ class RqlQueryTest extends \PHPUnit_Framework_TestCase
         $query = new Query();
         $query->setLimit(new LimitNode(10, 0));
         $this->assertEquals($query->getLimit(), $this->object->getLimit());
+    }
+
+    public function testLikeNode()
+    {
+        $this->object = new RqlQuery("like(colA,abc)");
+
+        $query = new Query();
+        $query->setQuery(new LikeNode('colA', 'abc'));
+        $this->assertSame(get_class($this->object->getQuery()), get_class($query->getQuery()));
+        //$this->assertEquals($query->getQuery(), $this->object->getQuery());
+    }
+
+    public function testLikeGlobNode()
+    {
+        $this->object = new RqlQuery("like(colA,abc)");
+
+        $query = new Query();
+        $query->setQuery(new LikeGlobNode('colA', 'abc'));
+        $this->assertSame(get_class($this->object->getQuery()), get_class($query->getQuery()));
+        $this->assertEquals($query->getQuery(), $this->object->getQuery());
+    }
+
+    public function testContainsNode()
+    {
+        $this->object = new RqlQuery("contains(colA,abc)");
+
+        $query = new Query();
+        $query->setQuery(new ContainsNode('colA', 'abc'));
+        $this->assertSame(get_class($this->object->getQuery()), get_class($query->getQuery()));
+        $this->assertEquals($query->getQuery(), $this->object->getQuery());
+    }
+
+    public function testLikeNodeWithMetaSymbols()
+    {
+        $this->object = new RqlQuery("like(colA,*abc?)");
+
+        $query = new Query();
+        $query->setQuery(new LikeNode('colA', '*abc?'));
+        $this->assertSame(get_class($this->object->getQuery()), get_class($query->getQuery()));
+        $this->assertEquals($query->getQuery(), $this->object->getQuery());
+    }
+
+    public function testLikeGlobNodeWithMetaSymbols()
+    {
+        $this->object = new RqlQuery("like(colA,*abc?)");
+
+        $query = new Query();
+        $query->setQuery(new LikeGlobNode('colA', '*abc?'));
+        $this->assertSame(get_class($this->object->getQuery()), get_class($query->getQuery()));
+        $this->assertEquals($query->getQuery(), $this->object->getQuery());
+    }
+
+    public function testContainsNodeWithMetaSymbols()
+    {
+        $this->object = new RqlQuery("contains(colA,*abc?)");
+
+        $query = new Query();
+        $query->setQuery(new ContainsNode('colA', '*abc?'));
+        var_dump($query);
+        $this->assertSame(get_class($this->object->getQuery()), get_class($query->getQuery()));
+        $this->assertEquals($query->getQuery(), $this->object->getQuery());
     }
 
     /* public function testLSSQNodes()

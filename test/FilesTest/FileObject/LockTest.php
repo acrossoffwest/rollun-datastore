@@ -75,6 +75,7 @@ class LockTest extends FileObjectAbstractTest
         //$lockMode LOCK_SH or LOCK_EX
         $this->assertTrue($this->fileObject1->flock(LOCK_EX));
         $this->fileObject2->rewind();
+        $actual = $this->fileObject2->current();
         $this->fileObject2->next();
         $actual = $this->fileObject2->current();
         $this->assertFalse($actual);
