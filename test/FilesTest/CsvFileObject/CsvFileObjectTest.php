@@ -108,8 +108,10 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
             [0, "A"],
             [1, "B"],
         );
-        foreach ($csvFileObject as $value) {
+        foreach ($csvFileObject as $csvFileObjectWithRefrence) {
+            $value = $csvFileObjectWithRefrence->current();
             $actual[] = $value;
+            $csvFileObjectWithRefrence->next();
         }
         $this->assertEquals($expected, $actual);
         return $csvFileObject;

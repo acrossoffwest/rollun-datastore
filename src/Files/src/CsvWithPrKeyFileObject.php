@@ -43,31 +43,39 @@ class CsvWithPrKeyFileObject extends CsvFileObject
         return null;
     }
 
-    public function searchRowById($id)
+    public function searchRowById($id, $from = null, $to = null, $lastPos = null)
     {
         $nearestBeggerId = null;
+        $from = $from ?? 0;
+        $to = $to ?? intval(trim(shell_exec("wc -l ".$this->fileObject->getPathname()." | awk '{print $1}'"))) - 1;
+        $middlePos = floor(($to - $from) / 2 + $from);
         $searchResult = new SearchResult($id);
-        foreach ($this as $rowNumber => $row) {
+        $prevFileObject = $this->fileObject;
+
+        foreach ($this as $rowNumber => $fileObject) {
+            $row = $fileObject->current();
             $currentId = $this->getId($row);
-            if ($currentId == $id) {
-                $searchResult->fill($this->fileObject);
+
+            if ($currentId === $id) {
+                $searchResult->fill($prevFileObject);
                 return $searchResult;
             }
+
             if ($currentId > $id && (!isset($nearestBeggerId) || $nearestBeggerId > $currentId)) {
-                $searchResult->fillNext($this->fileObject);
+                $searchResult->fillNext($fileObject);
                 $nearestBeggerId = $currentId;
             }
 
-
             switch (true) {
-
+                case is_numeric($currentId) && intval($currentId) > $id:
+                case is_numeric($currentId) && is_numeric($id) && $currentId == $id:
+                case is_numeric($currentId) && intval($currentId) === $id:
+                    $searchResult->fill($fileObject);
+                    return $searchResult;
                 case $middlePos === $lastPos && $id > $currentId :
                     $this->fileObject->next();
                 case $lastPos === $middlePos && $id < $currentId :
-                    $searchResult->fillNext($this->fileObject);
-                    return $searchResult;
-                case $currentId == $id:
-                    $searchResult->fill($this->fileObject);
+                    $searchResult->fillNext($fileObject);
                     return $searchResult;
                 case ($row !== false) && ($currentId < $id):
                     $from = $middlePos;
@@ -75,7 +83,16 @@ class CsvWithPrKeyFileObject extends CsvFileObject
                 default:
                     $to = $middlePos;
             }
+
+            if ($rowNumber === $to) {
+                return $searchResult;
+            }
+
+            $this->fileObject->next();
         }
+        // $lastPos = $middlePos;
+        // var_dump(compact('id', 'searchResult', 'currentId'));
+        return $searchResult;
     }
 
     /**

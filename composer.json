@@ -52,7 +52,10 @@
             "rollun\\test\\datastore\\": "test/DataStoreTest",
             "rollun\\test\\uploader\\": "test/UploaderTest",
             "rollun\\test\\files\\": "test/FilesTest"
-        }
+        },
+        "files": [
+            "helpers.php"
+        ]
     },
     "scripts": {
         "post-create-project-cmd": [

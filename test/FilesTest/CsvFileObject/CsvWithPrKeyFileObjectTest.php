@@ -15,11 +15,13 @@ class CsvWithPrKeyFileObjectTest extends CsvFileObjectAbstractTest
     }
 
     /**
+     * @group testNow
      * @dataProvider getRowProvider
      */
     public function testGetRow($testedRows, $queryIdAndExpectedId)
     {
         $csvWithPrKeyFileObject = $this->getCsvWithPrKeyFileObject("id,val\n", $testedRows);
+
         foreach ($queryIdAndExpectedId as $value) {
             $queryId = $value[0];
             $expectedId = $value[1];

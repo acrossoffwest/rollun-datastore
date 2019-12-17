@@ -1182,6 +1182,7 @@ abstract class AbstractTest extends \PHPUnit_Framework_TestCase
                     ['id' => 6, 'date' => '2017-06-06T00:00:00+00:00'],
                 ]
         );
+
         $query = new Query();
 
         $query->setQuery(new LogicOperator\AndNode([

@@ -3,6 +3,9 @@
         <testsuite name="rollun\\test\\datastore\\">
             <directory>./test/DataStoreTest/DataStore</directory>
         </testsuite>
+        <testsuite name="Files">
+            <directory>./test/FilesTest</directory>
+        </testsuite>
     </testsuites>
 
 

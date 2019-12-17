@@ -21,7 +21,7 @@ $configurator = function () use ($nameEnvVars, $config, $argv) {
         $match = [];
         if (isset($argv)) {
             foreach ($argv as $value) {
-                if (preg_match('/^APP_ENV=([\w-_]+)/', $value, $match)) {
+                if (preg_match('/^APP_ENV=([\w\-\_]+)/', $value, $match)) {
                     return $match[1];
                 }
             }

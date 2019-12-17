@@ -11,6 +11,7 @@ namespace rollun\datastore\DataStore;
 
 use phpDocumentor\Reflection\Types\Integer;
 use rollun\datastore\DataStore\ConditionBuilder\ConditionBuilderAbstract;
+use rollun\datastore\DataStore\ConditionBuilder\PhpConditionBuilder;
 use rollun\datastore\DataStore\Interfaces\DataStoresInterface;
 use rollun\datastore\DataStore\Iterators\DataStoreIterator;
 use rollun\datastore\Rql\Node\AggregateFunctionNode;
@@ -145,7 +146,7 @@ abstract class DataStoreAbstract implements DataStoresInterface
     protected function queryWhere(Query $query, $limit, $offset)
     {
         $conditionBuilder = $this->conditionBuilder;
-        $conditioon = $conditionBuilder($query->getQuery());
+        $conditioon = ($conditionBuilder ?? (new PhpConditionBuilder()))($query->getQuery());
 
         $whereFunctionBody = PHP_EOL .
                 '$result = ' . PHP_EOL

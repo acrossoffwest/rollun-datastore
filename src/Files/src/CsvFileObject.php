@@ -117,15 +117,17 @@ class CsvFileObject implements \IteratorAggregate
     {
         $this->fileObject->lock(LOCK_SH);
         $this->fileObject->rewind();
+        $fileObject = $this->fileObject;
         $this->fileObject->current();
         $this->fileObject->next();
         while ($this->fileObject->valid()) {
-            $row = $this->fileObject->current();
+            $row = $fileObject->current();
             if ($row == [null]) {
                 break;
             }
-            $this->fileObject->next();
-            yield $row;
+            // $this->fileObject->next();
+            // yield $row;
+            yield $this->fileObject;
         }
         $this->fileObject->unlock();
     }
