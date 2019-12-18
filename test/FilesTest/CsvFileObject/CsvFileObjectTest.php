@@ -108,10 +108,26 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
             [0, "A"],
             [1, "B"],
         );
-        foreach ($csvFileObject as $csvFileObjectWithRefrence) {
-            $value = $csvFileObjectWithRefrence->current();
+        foreach ($csvFileObject as $value) {
             $actual[] = $value;
-            $csvFileObjectWithRefrence->next();
+        }
+        $this->assertEquals($expected, $actual);
+        return $csvFileObject;
+    }
+
+    /**
+     *
+     * @param CsvFileObject $csvFileObject
+     * @depends testAddRow
+     */
+    public function testIteratorAndPosReferenceInFile(CsvFileObject $csvFileObject)
+    {
+        $expected = array(
+            [0, "A"],
+            [1, "B"],
+        );
+        foreach ($csvFileObject as $value) {
+            $actual[] = $csvFileObject->getFileObject()->current();
         }
         $this->assertEquals($expected, $actual);
         return $csvFileObject;

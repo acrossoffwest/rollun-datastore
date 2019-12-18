@@ -125,9 +125,8 @@ class CsvFileObject implements \IteratorAggregate
             if ($row == [null]) {
                 break;
             }
-            // $this->fileObject->next();
-            // yield $row;
-            yield $this->fileObject;
+            yield $row;
+            $this->fileObject->next();
         }
         $this->fileObject->unlock();
     }
