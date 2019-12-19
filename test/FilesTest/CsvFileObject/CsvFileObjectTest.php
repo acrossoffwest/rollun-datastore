@@ -88,6 +88,10 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
         $expectedRows = array(
             [0, "A"],
             [1, "B"],
+            [2, "C\nD"],
+            [3, "E\r\nF"],
+            [4, "G\r\n\"123\"H"],
+            [5, "I\r\n\"123\"J\r\nK\""],
         );
         foreach ($expectedRows as $row) {
             $csvFileObject->addRow($row);
@@ -107,6 +111,10 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
         $expected = array(
             [0, "A"],
             [1, "B"],
+            [2, "C\nD"],
+            [3, "E\r\nF"],
+            [4, "G\r\n\"123\"H"],
+            [5, "I\r\n\"123\"J\r\nK\""],
         );
         foreach ($csvFileObject as $value) {
             $actual[] = $value;
@@ -125,12 +133,77 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
         $expected = array(
             [0, "A"],
             [1, "B"],
+            [2, "C\nD"],
+            [3, "E\r\nF"],
+            [4, "G\r\n\"123\"H"],
+            [5, "I\r\n\"123\"J\r\nK\""],
         );
         foreach ($csvFileObject as $value) {
             $actual[] = $csvFileObject->getFileObject()->current();
         }
         $this->assertEquals($expected, $actual);
         return $csvFileObject;
+    }
+
+    /**
+     *
+     * @param CsvFileObject $csvFileObject
+     * @depends testAddRow
+     */
+    public function testNumberOfRowsOfFile(CsvFileObject $csvFileObject)
+    {
+        $this->assertEquals(6, $csvFileObject->getNumberOfRows());
+    }
+
+    public function testNumberOfRowsOfEmptyFile()
+    {
+        $fullFilename = $this->makeFullFileName();
+        @unlink($fullFilename);
+        CsvFileObject::createNewCsvFile($fullFilename, []);
+        $csvFileObject = new CsvFileObject($fullFilename);
+        $this->assertEquals(0, $csvFileObject->getNumberOfRows());
+    }
+
+    public function testWithWrongCustomConfigs()
+    {
+        $fullFilename = $this->makeFullFileName();
+        @unlink($fullFilename);
+        try {
+            CsvFileObject::createNewCsvFile($fullFilename, ['id', 'val'], '|', "'", '/');
+        } catch (\Exception $exception) {
+            $this->assertEquals("In writing mode, the escape char must be a backslash '\\'. The given escape char '/' will be ignored.", $exception->getMessage());
+            // $this->expectException()
+        }
+    }
+
+    public function testWithCustomConfigs()
+    {
+        $fullFilename = $this->makeFullFileName();
+        @unlink($fullFilename);
+        CsvFileObject::createNewCsvFile($fullFilename, ['id', 'val'], '|', "'");
+        $csvFileObject = new CsvFileObject($fullFilename);
+        $this->assertEquals(0, $csvFileObject->getNumberOfRows());
+        $expectedRows = array(
+            [0, "E\r\nF"],
+            [1, "G\r\n\"123\"H"],
+            [2, "I\r\n\"123\"J\r\nK\""],
+        );
+        foreach ($expectedRows as $row) {
+            $csvFileObject->addRow($row);
+            $actual = $csvFileObject->getRow($row[0]);
+            $this->assertEquals($expectedRows[$row[0]], $actual);
+        }
+        $this->assertEquals(3, $csvFileObject->getNumberOfRows());
+    }
+
+    /**
+     *
+     * @param CsvFileObject $csvFileObject
+     * @depends testAddRow
+     */
+    public function testNumberOfLinesOfFile(CsvFileObject $csvFileObject)
+    {
+        $this->assertEquals(7, $csvFileObject->getNumberOfLines());
     }
 
     /**

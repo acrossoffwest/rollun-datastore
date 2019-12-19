@@ -13,6 +13,18 @@ class CsvFileObject implements \IteratorAggregate
      * @var FileObject
      */
     protected $fileObject;
+    /**
+     * @var string
+     */
+    protected $delimiter;
+    /**
+     * @var string
+     */
+    protected $enclosure;
+    /**
+     * @var string
+     */
+    protected $escape;
 
     /**
      *
@@ -20,7 +32,7 @@ class CsvFileObject implements \IteratorAggregate
      */
     protected $columns;
 
-    public static function createNewCsvFile(string $filename, array $columnsNames)
+    public static function createNewCsvFile(string $filename, array $columnsNames, $delimiter = ',', $enclosure = '"', $escape = '\\')
     {
         if (is_readable($filename)) {
             throw new \InvalidArgumentException(
@@ -28,10 +40,10 @@ class CsvFileObject implements \IteratorAggregate
             );
         }
         $fileObject = new FileObject($filename);
-        $fileObject->fputcsv($columnsNames);
+        $fileObject->fputcsv($columnsNames, $delimiter, $enclosure, $escape);
     }
 
-    public function __construct(string $filename)
+    public function __construct(string $filename, $delimiter = ',', $enclosure = '"', $escape = '\\')
     {
         if (!is_readable($filename)) {
             throw new \InvalidArgumentException(
@@ -39,8 +51,44 @@ class CsvFileObject implements \IteratorAggregate
             );
         }
         $this->fileObject = new FileObject($filename);
+
+        $this->delimiter = $delimiter;
+        $this->enclosure = $enclosure;
+        $this->escape = $escape;
+
         $this->fileObject->setFlags(\SplFileObject::READ_CSV); //| \SplFileObject::DROP_NEW_LINE | \SplFileObject::READ_AHEAD |\SplFileObject: \SplFileObject::SKIP_EMPTY | \SplFileObject::READ_CSV
+        $this->setControl($delimiter, $enclosure, $enclosure);
         $this->getColumns();
+    }
+
+    /**
+     * @param string $delimiter
+     * @param string $enclosure
+     * @param string $escape
+     */
+    protected function setControl($delimiter = ',', $enclosure = '"', $escape = '\\')
+    {
+        $this->fileObject->setCsvControl($delimiter, $enclosure, $escape);
+    }
+
+    /**
+     * Get number of lines of file
+     * @return int
+     */
+    public function getNumberOfLines()
+    {
+        $this->fileObject->seek(PHP_INT_MAX);
+        return $this->fileObject->key();
+    }
+
+    /**
+     * Get number of rows with values
+     * @return int
+     */
+    public function getNumberOfRows()
+    {
+        $numberOfLines = $this->getNumberOfLines();
+        return $numberOfLines >= 1 ? $numberOfLines - 1 : 0;
     }
 
     public function getFileObject()
@@ -91,7 +139,7 @@ class CsvFileObject implements \IteratorAggregate
     public function addRow(array $dataArray)
     {
         $this->fileObject->lock(LOCK_SH);
-        $length = $this->fileObject->fputcsv($dataArray);
+        $length = $this->fileObject->fputcsv($dataArray, $this->delimiter, $this->enclosure, $this->escape);
         if ($length === false) {
             $dataInJson = Serializer::jsonSerialize($dataArray);
             throw new \InvalidArgumentException(
