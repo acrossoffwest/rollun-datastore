@@ -47,7 +47,7 @@ class CsvWithPrKeyFileObject extends CsvFileObject
     {
         $nearestBeggerId = null;
         $from = $from ?? 0;
-        $to = $to ?? intval(trim(shell_exec("wc -l ".$this->fileObject->getPathname()." | awk '{print $1}'"))) - 1;
+        $to = $to ?? $this->getNumberOfRows();
         $middlePos = floor(($to - $from) / 2 + $from);
         $searchResult = new SearchResult($id);
         $prevFileObject = $this->fileObject;

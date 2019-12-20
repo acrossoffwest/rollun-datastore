@@ -196,6 +196,100 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
         $this->assertEquals(3, $csvFileObject->getNumberOfRows());
     }
 
+    public function testReadRowsFromFileGeneratedByLibreOffice()
+    {
+        $expected = array(
+            [0, "123\nSd \"123\" s, df\n4234234"],
+            [1, "A"],
+            [2, "B, C, D, “E”"],
+            [3, "\"123\", 1, 321"],
+        );
+        $fullFilename = $this->makeFullFileName('CsvFileGeneratedByLibreOffice.csv');
+        $csvFileObject = new CsvFileObject($fullFilename);
+        foreach ($csvFileObject as $value) {
+            $actual[] = $value;
+        }
+        $this->assertEquals($expected, $actual);
+        $this->assertEquals(4, $csvFileObject->getNumberOfRows());
+    }
+
+    public function testReadRowsFromFileGeneratedByGoogleSpreadsheet()
+    {
+        $expected = array(
+            [0, "A"],
+            [1, "B\nC\n\"test message\"\n"],
+            [2, "\"test\""],
+            [3, "1, \"quotes\", 3"],
+        );
+        $fullFilename = $this->makeFullFileName('CsvFileGeneratedByGoogleSpreadsheet.csv');
+        $csvFileObject = new CsvFileObject($fullFilename);
+        foreach ($csvFileObject as $value) {
+            $actual[] = $value;
+        }
+        $this->assertEquals($expected, $actual);
+        $this->assertEquals(4, $csvFileObject->getNumberOfRows());
+    }
+
+    public function testReadRowsFromFileGeneratedByMsExcelMacintoshWithEncodingUtf8()
+    {
+        $expected = array(
+            [0, "A"],
+            [1, "123\nSd \"123\" s, df\n4234234"],
+            [2, "B, \"C\", D"],
+            [3, "\"E\""],
+            [4, "\"F\", \"G\", \"I"],
+            [5, "J"],
+        );
+        $fullFilename = $this->makeFullFileName('CsvFileGeneratedByMSExcelMacintoshUtf8.csv');
+        $csvFileObject = new CsvFileObject($fullFilename, ';');
+
+        foreach ($csvFileObject as $value) {
+            $actual[] = $value;
+        }
+        $this->assertEquals($expected, $actual);
+        $this->assertEquals(6, $csvFileObject->getNumberOfRows());
+    }
+
+    public function testReadRowsFromFileGeneratedByMsExcelMacintoshThrowEncodingException()
+    {
+        $expected = array(
+            [0, "A"],
+            [1, "123\nSd \"123\" s, df\n4234234"],
+            [2, "B, \"C\", D"],
+            [3, "\"E\""],
+            [4, "\"F\", \"G\", \"I"],
+            [5, "J"],
+        );
+        $fullFilename = $this->makeFullFileName('CsvFileGeneratedByMSExcelMacintosh.csv');
+        $csvFileObject = new CsvFileObject($fullFilename, ';');
+
+        foreach ($csvFileObject as $value) {
+            $actual[] = $value;
+        }
+        $this->assertEquals($expected, $actual);
+        $this->assertEquals(6, $csvFileObject->getNumberOfRows());
+    }
+
+    public function testReadRowsFromFileGeneratedByMsExcelMsDosThrowEncodingException()
+    {
+        $expected = array(
+            [0, "A"],
+            [1, "123\nSd \"123\" s, df\n4234234"],
+            [2, "B, \"C\", D"],
+            [3, "\"E\""],
+            [4, "\"F\", \"G\", \"I"],
+            [5, "J"],
+        );
+        $fullFilename = $this->makeFullFileName('CsvFileGeneratedByMsExcelMsDos.csv');
+        $csvFileObject = new CsvFileObject($fullFilename, ';');
+
+        foreach ($csvFileObject as $value) {
+            $actual[] = $value;
+        }
+        $this->assertEquals($expected, $actual);
+        $this->assertEquals(6, $csvFileObject->getNumberOfRows());
+    }
+
     /**
      *
      * @param CsvFileObject $csvFileObject

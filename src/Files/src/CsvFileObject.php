@@ -61,6 +61,19 @@ class CsvFileObject implements \IteratorAggregate
         $this->getColumns();
     }
 
+    protected function processCsv($file) {
+
+        $file = fopen($file, "r");
+        $data = array();
+
+        while (!feof($file)) {
+            $data[] = str_getcsv($file, null, iconv('utf-8', 'us-ascii', ";"));
+        }
+
+        fclose($file);
+        return $data;
+    }
+
     /**
      * @param string $delimiter
      * @param string $enclosure
@@ -77,8 +90,10 @@ class CsvFileObject implements \IteratorAggregate
      */
     public function getNumberOfLines()
     {
+        $this->fileObject->fseek(PHP_INT_MAX);
+        $numberOfLines = $this->fileObject->key();
         $this->fileObject->seek(PHP_INT_MAX);
-        return $this->fileObject->key();
+        return $numberOfLines > $this->fileObject->key() ? $numberOfLines : $this->fileObject->key();
     }
 
     /**

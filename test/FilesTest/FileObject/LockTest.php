@@ -78,7 +78,6 @@ class LockTest extends FileObjectAbstractTest
         $actual = $this->fileObject2->current();
         $this->fileObject2->next();
         $actual = $this->fileObject2->current();
-
         $this->assertFalse($actual);
         $actual = $this->fileObject2->key();
         $this->fileObject2->next();

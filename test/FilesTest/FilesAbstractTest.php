@@ -32,14 +32,13 @@ abstract class FilesAbstractTest extends \PHPUnit_Framework_TestCase
         return $name;
     }
 
-    protected function makeFullFileName()
+    protected function makeFullFileName($filename = null)
     {
         $fileManager = new FileManager;
         $dirName = $this->makeDirName();
         $fileManager->createDir($dirName);
-        $filename = $this->makeFileName();
+        $filename = $filename ?? $this->makeFileName();
         $fullFilename = $fileManager->joinPath($dirName, $filename);
         return $fullFilename;
     }
-
 }
