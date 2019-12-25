@@ -47,7 +47,7 @@ class CsvWithPrKeyFileObject extends CsvFileObject
     {
         $nearestBeggerId = null;
         $from = $from ?? 0;
-        $to = $to ?? $this->getNumberOfRows();
+        $to = $to ?? $this->getNumberOfLines();
         $middlePos = floor(($to - $from) / 2 + $from);
         $searchResult = new SearchResult($id);
         $prevFileObject = $this->fileObject;

@@ -70,10 +70,22 @@ class LockTest extends FileObjectAbstractTest
         $this->fileObject2->lock(LOCK_EX);
     }
 
+    /**
+     * flock() on Windows: uses mandatory locking instead of advisory locking
+     * flock() on Linux: utilizes ADVISORY locking only; that is, other processes may ignore the lock completely
+     */
     public function testLockRead()
     {
         //$lockMode LOCK_SH or LOCK_EX
         $this->assertTrue($this->fileObject1->flock(LOCK_EX));
+
+        /**
+         * Linux
+         */
+        if (stripos(php_uname(), 'linux') !== false) {
+            return;
+        }
+
         $this->fileObject2->rewind();
         $actual = $this->fileObject2->current();
         $this->fileObject2->next();

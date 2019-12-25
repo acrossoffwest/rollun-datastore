@@ -7,7 +7,21 @@ use rollun\files\CsvWithPrKeyFileObject;
 
 class CsvWithPrKeyFileObjectTest extends CsvFileObjectAbstractTest
 {
-
+    public function getRowsProvider()
+    {
+        return [
+            [
+                [
+                    [0, "A"],
+                    [1, "B"],
+                    [2, "C\nD"],
+                    [3, "E\nF"],
+                    [4, "G\n\"123\"H"],
+                    [5, "I\n\"123\"J\nK\""],
+                ]
+            ]
+        ];
+    }
     public function getRowProvider()
     {
         $sets = $this->arrayProvider();

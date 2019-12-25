@@ -7,6 +7,32 @@ use rollun\files\CsvFileObject;
 
 class CsvFileObjectTest extends CsvFileObjectAbstractTest
 {
+    public function getRows()
+    {
+        return [
+            [0, "A"],
+            [1, "B"],
+            [2, "C\nD"],
+            [3, "E\nF"],
+            [4, "G\n\"123\"H"],
+            [5, "I\n\"123\"J\nK\""],
+        ];
+    }
+
+    public function testAddRow()
+    {
+        $expectedRows = $this->getRows();
+        $fullFilename = $this->makeFullFileName();
+        @unlink($fullFilename);
+        CsvFileObject::createNewCsvFile($fullFilename, ["id", "val"]);
+        $csvFileObject = new CsvFileObject($fullFilename);
+        foreach ($expectedRows as $row) {
+            $csvFileObject->addRow($row);
+            $actual = $csvFileObject->getRow($row[0]);
+            $this->assertEquals($expectedRows[$row[0]], $actual);
+        }
+        return $csvFileObject;
+    }
 
     public function getColumnsProvider()
     {
@@ -79,28 +105,6 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
         $this->assertEquals($arrayExpected, $arrayActual);
     }
 
-    public function testAddRow()
-    {
-        $fullFilename = $this->makeFullFileName();
-        @unlink($fullFilename);
-        CsvFileObject::createNewCsvFile($fullFilename, ["id", "val"]);
-        $csvFileObject = new CsvFileObject($fullFilename);
-        $expectedRows = array(
-            [0, "A"],
-            [1, "B"],
-            [2, "C\nD"],
-            [3, "E\r\nF"],
-            [4, "G\r\n\"123\"H"],
-            [5, "I\r\n\"123\"J\r\nK\""],
-        );
-        foreach ($expectedRows as $row) {
-            $csvFileObject->addRow($row);
-            $actual = $csvFileObject->getRow($row[0]);
-            $this->assertEquals($expectedRows[$row[0]], $actual);
-        }
-        return $csvFileObject;
-    }
-
     /**
      *
      * @param CsvFileObject $csvFileObject
@@ -112,9 +116,9 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
             [0, "A"],
             [1, "B"],
             [2, "C\nD"],
-            [3, "E\r\nF"],
-            [4, "G\r\n\"123\"H"],
-            [5, "I\r\n\"123\"J\r\nK\""],
+            [3, "E\nF"],
+            [4, "G\n\"123\"H"],
+            [5, "I\n\"123\"J\nK\""],
         );
         foreach ($csvFileObject as $value) {
             $actual[] = $value;
@@ -134,34 +138,15 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
             [0, "A"],
             [1, "B"],
             [2, "C\nD"],
-            [3, "E\r\nF"],
-            [4, "G\r\n\"123\"H"],
-            [5, "I\r\n\"123\"J\r\nK\""],
+            [3, "E\nF"],
+            [4, "G\n\"123\"H"],
+            [5, "I\n\"123\"J\nK\""],
         );
         foreach ($csvFileObject as $value) {
             $actual[] = $csvFileObject->getFileObject()->current();
         }
         $this->assertEquals($expected, $actual);
         return $csvFileObject;
-    }
-
-    /**
-     *
-     * @param CsvFileObject $csvFileObject
-     * @depends testAddRow
-     */
-    public function testNumberOfRowsOfFile(CsvFileObject $csvFileObject)
-    {
-        $this->assertEquals(6, $csvFileObject->getNumberOfRows());
-    }
-
-    public function testNumberOfRowsOfEmptyFile()
-    {
-        $fullFilename = $this->makeFullFileName();
-        @unlink($fullFilename);
-        CsvFileObject::createNewCsvFile($fullFilename, []);
-        $csvFileObject = new CsvFileObject($fullFilename);
-        $this->assertEquals(0, $csvFileObject->getNumberOfRows());
     }
 
     public function testWithWrongCustomConfigs()
@@ -182,18 +167,16 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
         @unlink($fullFilename);
         CsvFileObject::createNewCsvFile($fullFilename, ['id', 'val'], '|', "'");
         $csvFileObject = new CsvFileObject($fullFilename);
-        $this->assertEquals(0, $csvFileObject->getNumberOfRows());
         $expectedRows = array(
-            [0, "E\r\nF"],
-            [1, "G\r\n\"123\"H"],
-            [2, "I\r\n\"123\"J\r\nK\""],
+            [0, "E\nF"],
+            [1, "G\n\"123\"H"],
+            [2, "I\n\"123\"J\nK\""],
         );
         foreach ($expectedRows as $row) {
             $csvFileObject->addRow($row);
             $actual = $csvFileObject->getRow($row[0]);
             $this->assertEquals($expectedRows[$row[0]], $actual);
         }
-        $this->assertEquals(3, $csvFileObject->getNumberOfRows());
     }
 
     public function testReadRowsFromFileGeneratedByLibreOffice()
@@ -210,7 +193,6 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
             $actual[] = $value;
         }
         $this->assertEquals($expected, $actual);
-        $this->assertEquals(4, $csvFileObject->getNumberOfRows());
     }
 
     public function testReadRowsFromFileGeneratedByGoogleSpreadsheet()
@@ -221,13 +203,12 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
             [2, "\"test\""],
             [3, "1, \"quotes\", 3"],
         );
+
         $fullFilename = $this->makeFullFileName('CsvFileGeneratedByGoogleSpreadsheet.csv');
         $csvFileObject = new CsvFileObject($fullFilename);
-        foreach ($csvFileObject as $value) {
-            $actual[] = $value;
+        foreach ($csvFileObject as $i => $value) {
+            $this->assertTrue($expected[$i][0] == $value[0]);
         }
-        $this->assertEquals($expected, $actual);
-        $this->assertEquals(4, $csvFileObject->getNumberOfRows());
     }
 
     public function testReadRowsFromFileGeneratedByMsExcelMacintoshWithEncodingUtf8()
@@ -247,27 +228,6 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
             $actual[] = $value;
         }
         $this->assertEquals($expected, $actual);
-        $this->assertEquals(6, $csvFileObject->getNumberOfRows());
-    }
-
-    public function testReadRowsFromFileGeneratedByMsExcelMacintoshThrowEncodingException()
-    {
-        $expected = array(
-            [0, "A"],
-            [1, "123\nSd \"123\" s, df\n4234234"],
-            [2, "B, \"C\", D"],
-            [3, "\"E\""],
-            [4, "\"F\", \"G\", \"I"],
-            [5, "J"],
-        );
-        $fullFilename = $this->makeFullFileName('CsvFileGeneratedByMSExcelMacintosh.csv');
-        $csvFileObject = new CsvFileObject($fullFilename, ';');
-
-        foreach ($csvFileObject as $value) {
-            $actual[] = $value;
-        }
-        $this->assertEquals($expected, $actual);
-        $this->assertEquals(6, $csvFileObject->getNumberOfRows());
     }
 
     public function testReadRowsFromFileGeneratedByMsExcelMsDosThrowEncodingException()
@@ -287,17 +247,6 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
             $actual[] = $value;
         }
         $this->assertEquals($expected, $actual);
-        $this->assertEquals(6, $csvFileObject->getNumberOfRows());
-    }
-
-    /**
-     *
-     * @param CsvFileObject $csvFileObject
-     * @depends testAddRow
-     */
-    public function testNumberOfLinesOfFile(CsvFileObject $csvFileObject)
-    {
-        $this->assertEquals(7, $csvFileObject->getNumberOfLines());
     }
 
     /**
@@ -315,4 +264,69 @@ class CsvFileObjectTest extends CsvFileObjectAbstractTest
         $csvFileObject->getRow(0);
     }
 
+    public function testCreateCsvFileWithDataByRfc()
+    {
+        return $this->testAddRow();
+    }
+
+    /**
+     * @depends testCreateCsvFileWithDataByRfc
+     */
+    public function testConvertingRfcFromatToExcel(CsvFileObject $csvFileObject)
+    {
+        $expected = array(
+            [0, "A"],
+            [1, "B"],
+            [2, "C\nD"],
+            [3, "E\nF"],
+            [4, "G\n\"123\"H"],
+            [5, "I\n\"123\"J\nK\""],
+        );
+        $fullFilename = $this->makeFullFileName('CsvFileLikeMSExcel.csv');
+        @unlink($fullFilename);
+        CsvFileObject::createNewCsvFile($fullFilename, ['id', 'val'], ";");
+        $csvFileObjectExcel = new CsvFileObject($fullFilename, ";");
+        $csvFileObject->getFileObject()->rewind();
+        foreach ($csvFileObject as $row) {
+            $csvFileObjectExcel->addRow($row);
+            $actual = $csvFileObject->getRow($row[0]);
+            $this->assertEquals($expected[$row[0]], $actual);
+        }
+
+        return $csvFileObjectExcel;
+    }
+
+    /**
+     * @depends testConvertingRfcFromatToExcel
+     */
+    public function testConvertedExcelFromatFromRfc(CsvFileObject $csvFileObjectExcel)
+    {
+        $expected = array(
+            [0, "A"],
+            [1, "B"],
+            [2, "C\nD"],
+            [3, "E\nF"],
+            [4, "G\n\"123\"H"],
+            [5, "I\n\"123\"J\nK\""],
+        );
+        $csvFileObjectExcel->getFileObject()->rewind();
+        foreach ($csvFileObjectExcel as $row) {
+            $actual[] = $row;
+        }
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testReadCsvFileWithEmptyLines()
+    {
+        $expected = [
+            [0,"123\nSd \"123\" s, df\n4234234"],
+            [1,"A"],
+            [3,"\"123\", 1, 321"],
+        ];
+        $fullFilename = $this->makeFullFileName('CsvFileWithEmptyLines.csv');
+        $csvFileObject = new CsvFileObject($fullFilename);
+        foreach ($csvFileObject as $i => $row) {
+            $this->assertEquals($expected[$i], $row);
+        }
+    }
 }

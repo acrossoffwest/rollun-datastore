@@ -10,7 +10,6 @@ use rollun\files\CsvWithPrKeyFileObject;
 
 abstract class CsvFileObjectAbstractTest extends FilesAbstractTest
 {
-
     protected function makeFile(string $stringInFile)
     {
         $fileManager = new FileManager;

@@ -90,20 +90,8 @@ class CsvFileObject implements \IteratorAggregate
      */
     public function getNumberOfLines()
     {
-        $this->fileObject->fseek(PHP_INT_MAX);
-        $numberOfLines = $this->fileObject->key();
         $this->fileObject->seek(PHP_INT_MAX);
-        return $numberOfLines > $this->fileObject->key() ? $numberOfLines : $this->fileObject->key();
-    }
-
-    /**
-     * Get number of rows with values
-     * @return int
-     */
-    public function getNumberOfRows()
-    {
-        $numberOfLines = $this->getNumberOfLines();
-        return $numberOfLines >= 1 ? $numberOfLines - 1 : 0;
+        return $this->fileObject->key();
     }
 
     public function getFileObject()
@@ -153,6 +141,7 @@ class CsvFileObject implements \IteratorAggregate
 
     public function addRow(array $dataArray)
     {
+        $dataArray = $this->prepareFieldsBeforeAdd($dataArray);
         $this->fileObject->lock(LOCK_SH);
         $length = $this->fileObject->fputcsv($dataArray, $this->delimiter, $this->enclosure, $this->escape);
         if ($length === false) {
@@ -164,6 +153,21 @@ class CsvFileObject implements \IteratorAggregate
         }
         $this->fileObject->unlock();
         return $length;
+    }
+
+    /**
+     * Before write new line to CSV file we have to replace \r\n special chars to \n from fields
+     *
+     * @param array $dataArray
+     * @return array
+     */
+    protected function prepareFieldsBeforeAdd(array $dataArray)
+    {
+        foreach ($dataArray as $key => $value) {
+            $dataArray[$key] = str_replace("\r\n", "\n", $dataArray[$key]);
+        }
+
+        return $dataArray;
     }
 
     public function deleteAllRows()
@@ -185,8 +189,11 @@ class CsvFileObject implements \IteratorAggregate
         $this->fileObject->next();
         while ($this->fileObject->valid()) {
             $row = $fileObject->current();
-            if ($row == [null]) {
+            if ($row === false) {
                 break;
+            } elseif ($row === [null]) {
+                $this->fileObject->next();
+                continue;
             }
             yield $row;
             $this->fileObject->next();
